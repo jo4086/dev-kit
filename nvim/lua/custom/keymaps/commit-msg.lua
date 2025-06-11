@@ -3,10 +3,10 @@ local M = {}
 function M.insert_git_commit_template(typeText)
 	local bufnr = vim.api.nvim_get_current_buf()
 
-	-- 날짜 생성
+	-- INFO: 날짜 생성
 	local today = os.date("[%Y-%m-%d]")
 
-	-- 템플릿 라인 구성
+	-- INFO: 템플릿 라인 구성
 	local lines = {
 		"[" .. typeText .. "]  ",
 		"",
@@ -21,17 +21,17 @@ function M.insert_git_commit_template(typeText)
 		"#",
 	}
 
-	-- 라인 삽입
+	-- INFO: 라인 삽입
 	vim.api.nvim_buf_set_lines(bufnr, 0, 0, false, lines)
 
-	-- 커서 위치: 2번째 줄의 끝 (Lua는 1-indexed)
+	-- INFO: 커서 위치 (태그 옆으로 이동)
 	vim.api.nvim_win_set_cursor(0, { 1, #lines[1] })
 
-	-- Insert 모드 진입
+	-- INFO: Insert 모드 진입
 	vim.cmd("startinsert")
 end
 
--- 명령어 등록
+-- INFO: 명령어모음
 local types = {
 	"Docs",
 	"Test",
@@ -50,20 +50,11 @@ local types = {
 }
 
 for _, typeText in ipairs(types) do
-	local cmd = typeText:gsub("[^%w]", "") -- 명령어 이름에 특수문자 제거
-	vim.api.nvim_create_user_command(cmd, function()
+	-- local cmd = typeText:gsub("[^%w]", "") -- 명령어 이름에 특수문자 제거
+	vim.api.nvim_create_user_command(typeText, function()
 		M.insert_git_commit_template(typeText)
 	end, {})
 end
-
---[[ local footer_keywords = {
-  Fixes = true,
-  Ref = true,
-  RelatedTo = true,
-  Closes = true,
-  Resolves = true,
-  SeeAlso = true,
-} ]]
 
 local footer_keywords = {
 	Fixes = "Fixes",
@@ -95,7 +86,7 @@ for keyword, label in pairs(footer_keywords) do
 			return
 		end
 
-		-- 날짜 아래 줄이 공백이면 그 자리에 삽입, 아니면 한 줄 더 아래
+		-- NOTE: 날짜 윗줄에 footer keyword삽입
 		local target_line = insert_index - 1
 		local insert_line
 		if lines[target_line] and lines[target_line]:match("^%s*$") then
@@ -104,7 +95,7 @@ for keyword, label in pairs(footer_keywords) do
 			insert_line = target_line
 		end
 
-		-- 중복 방지: 이미 같은 키워드 있는 경우 무시 (원하면 제거 가능)
+		-- INFO: footer 중복 방지: 이미 같은 키워드 있는 경우 무시
 		for _, l in ipairs(lines) do
 			if l:match("^" .. vim.pesc(label) .. ":") then
 				print("⚠️ Already added: " .. label)
